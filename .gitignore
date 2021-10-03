@@ -1,0 +1,9 @@
+.vscode/
+build/
+
+build.bat
+buildf.bat
+run.sh
+
+*.ppm
+*.png
