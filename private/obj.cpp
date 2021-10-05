@@ -189,7 +189,12 @@ namespace anton {
                         return {expected_error, ANTON_MOV(vertex_index_result.error())};
                     }
 
-                    if(match(iter, end, "/"_sv7)) {
+                    // Detect v//vn patterns.
+                    if(!match(iter, end, "//"_sv7)) {
+                        if(!match(iter, end, "/"_sv7)) {
+                            return {expected_error, "expected '/' in 'f' statement"_s};
+                        }
+
                         Expected<i64, String> uv_index_result = read_int64(iter, end);
                         if(uv_index_result) {
                             i64 uv_index = uv_index_result.value();
@@ -208,27 +213,39 @@ namespace anton {
                         } else {
                             return {expected_error, ANTON_MOV(uv_index_result.error())};
                         }
+
+                        if(!match(iter, end, "/"_sv7)) {
+                            return {expected_error, "expected '/' in 'f' statement"_s};
+                        }
                     }
 
-                    if(match(iter, end, "/"_sv7)) {
-                        Expected<i64, String> normal_index_result = read_int64(iter, end);
-                        if(normal_index_result) {
-                            i64 normal_index = normal_index_result.value();
-                            // We turn the index into an absolute value.
-                            if(normal_index < 0) {
-                                // A negative index references attribute relative to the current end of the sequence,
-                                // i.e. the end of the sequence that has been parsed at that point in the
-                                // parsing process of the OBJ data.
-                                // We don't have to subtract 1 because the greatest value is -1, i.e. the last element.
-                                normal_index = static_cast<i64>(texture_coordinates.size()) + normal_index;
-                            } else {
-                                // OBJ uses 1 based arrays, thus subtract 1.
-                                normal_index -= 1;
-                            }
-                            face.normal_indices.push_back(normal_index);
+                    // We have to check for whitespace because otherwise we will match the index from the next group.
+                    // Newline ends the statement, space signifies the end of the current group.
+                    if(match(iter, end, "\n"_sv7)) {
+                        break;
+                    }
+
+                    if(match(iter, end, " "_sv7)) {
+                        continue;
+                    }
+
+                    Expected<i64, String> normal_index_result = read_int64(iter, end);
+                    if(normal_index_result) {
+                        i64 normal_index = normal_index_result.value();
+                        // We turn the index into an absolute value.
+                        if(normal_index < 0) {
+                            // A negative index references attribute relative to the current end of the sequence,
+                            // i.e. the end of the sequence that has been parsed at that point in the
+                            // parsing process of the OBJ data.
+                            // We don't have to subtract 1 because the greatest value is -1, i.e. the last element.
+                            normal_index = static_cast<i64>(texture_coordinates.size()) + normal_index;
                         } else {
-                            return {expected_error, ANTON_MOV(normal_index_result.error())};
+                            // OBJ uses 1 based arrays, thus subtract 1.
+                            normal_index -= 1;
                         }
+                        face.normal_indices.push_back(normal_index);
+                    } else {
+                        return {expected_error, ANTON_MOV(normal_index_result.error())};
                     }
                 }
             } else if(match(iter, end, "o"_sv7)) {
