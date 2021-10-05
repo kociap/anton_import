@@ -45,7 +45,9 @@ namespace anton {
     [[nodiscard]] static bool match(data_iterator& iter, data_iterator const& end, String7_View const string) {
         data_iterator const backup = iter;
         for(char8 const c: string) {
-            if(iter == end || *iter != c) {
+            if(iter != end && *iter == c) {
+                ++iter;
+            } else {
                 iter = backup;
                 return false;
             }
