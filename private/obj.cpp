@@ -249,6 +249,11 @@ namespace anton {
                     } else {
                         return {expected_error, ANTON_MOV(normal_index_result.error())};
                     }
+
+                    // Check for the end of the statement.
+                    if(match(iter, end, "\n"_sv7)) {
+                        break;
+                    }
                 }
             } else if(match(iter, end, "o"_sv7)) {
                 // Object name
