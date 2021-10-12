@@ -191,6 +191,16 @@ namespace anton {
                         return {expected_error, ANTON_MOV(vertex_index_result.error())};
                     }
 
+                    // vt and vn paramters are optional. v is followed by ' ' or '\n'
+                    // if vt or vn are not present.
+                    if(match(iter, end, "\n"_sv7)) {
+                        break;
+                    }
+
+                    if(match(iter, end, " "_sv7)) {
+                        continue;
+                    }
+
                     // Detect v//vn patterns.
                     if(!match(iter, end, "//"_sv7)) {
                         if(!match(iter, end, "/"_sv7)) {
